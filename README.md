@@ -50,6 +50,21 @@ python3 poe-manager.py --host '10.10.10.2' --user admin --password hunter2 --por
 python3 poe-manager.py --host '10.10.10.2' --user admin --password hunter2 --port 3 --state 0
 ```
 
+### Bash convenience function
+
+This is how I primarily use this script. Insert the following in your `.bashrc`:
+```bash
+function poemanager() { /path/to/poe-manager.py -H '10.10.10.2' -U admin -P hunter2 -p $1 -s $2; }
+```
+This would make the above examples look like the following:
+```bash
+poemanager 3 1   # turn on port 3
+poemanager 3 0   # turn off port 3
+```
+
+Yes, you are saving the password in your `.bashrc`, but if someone can read arbitrary files in your system you're in much more trouble.
+
+
 ## Contribution
 
 If you manage to extend the feature set of this script, I'd really appreciate a PR.
