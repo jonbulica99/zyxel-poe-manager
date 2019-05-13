@@ -128,7 +128,7 @@ def parse_cookie(cmd_1):
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(
-        description='Manage PoE ports for a Zyxel GS1900-10HP switch.')
+        description='Manage the PoE ports of a Zyxel GS1900-10HP switch.')
     parser.add_argument('--host', '-H', dest='host',
                         required=True, help='The hostname of the switch.')
     parser.add_argument('--user', '-U', dest='user',
