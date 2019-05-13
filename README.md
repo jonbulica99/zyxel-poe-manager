@@ -11,9 +11,9 @@ The only thing it does is log into the web management and do the same you would 
 
 This program was written for python3. You are welcome to rewrite it for python2 and make a PR.
 
-The only dependency is `requests`. You can install it using pip:
+The only requirements are `requests` and `BeautifulSoup4` (for HTML parsing). You can install them using pip:
 ```bash
-python3 -m pip install requests
+python3 -m pip install -r requirements.txt
 ```
 Furthermore the script was tested on firmware version `V2.40(AAZI.1)_20180705` of my `GS1900-10HP` model rev `A1`. There are absolutely no guarantees that it will work with your system.
 
@@ -21,7 +21,7 @@ Furthermore the script was tested on firmware version `V2.40(AAZI.1)_20180705` o
 ## Usage
 ```
 usage: poe-manager.py [-h] --host HOST --user USER --password PWD --port PORT
-                      --state {0,1}
+                      [--state {0,1}] [--verbose]
 
 Manage PoE ports for a Zyxel GS1900-10HP switch.
 
@@ -31,9 +31,13 @@ optional arguments:
   --user USER, -U USER  An administrative user.
   --password PWD, -P PWD
                         Password of the admin user.
-  --port PORT, -p PORT  The port number.
+  --port PORT, -p PORT  The port number. When querying information, 0 means
+                        all ports.
   --state {0,1}, -s {0,1}
-                        Turn the port on (1) or off (0).
+                        Turn the port on (1) or off (0). To query the state,
+                        rather than set it, omit this parameter.
+  --verbose, -V         Return detailed information when querying the
+                        specified port state.
 ```
 
 ## Examples
@@ -48,6 +52,25 @@ python3 poe-manager.py --host '10.10.10.2' --user admin --password hunter2 --por
 
 ```bash
 python3 poe-manager.py --host '10.10.10.2' --user admin --password hunter2 --port 3 --state 0
+```
+
+### Get the current state of PoE port 4
+
+```bash
+python3 poe-manager.py --host '10.10.10.2' --user admin --password hunter2 --port 4
+# Output: Enable
+```
+
+Alternatively, use the `--verbose` flag to get even more information for port 4:
+```bash
+python3 poe-manager.py --host '10.10.10.2' --user admin --password hunter2 --port 4 --verbose
+# Output: {'Port': '4', 'State': 'Enable', 'Class': 'class4', 'PD Priority': 'High', 'Power-Up': '802.3at', 'Wide Range Detection': 'Disable', 'Consuming Power (mW)': '3300', 'Max Power (mW)': '31200'}
+```
+
+### Get detailed information for all PoE ports
+
+```bash
+python3 poe-manager.py --host '10.10.10.2' --user admin --password hunter2 --port 0 --verbose
 ```
 
 ### Bash convenience function
