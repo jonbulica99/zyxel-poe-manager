@@ -9,8 +9,6 @@ from bs4 import BeautifulSoup
 
 
 def main(args):
-    # print("Args:", args)
-
     s = requests.Session()
     # unfortunately, the ssl ciphers used by zyxel are very old and deprecated, thus plaintext HTTP
     url = "http://{}/cgi-bin/dispatcher.cgi".format(args.host)
@@ -29,9 +27,10 @@ def main(args):
 
     # print("Logging in...")
     s.get(url, params=login_data)
-    sleep(1)  # implicitely wait for login to occur
+    # implicitly wait for login to occur
+    sleep(1)
     ret2 = s.get(url, params=login_check_data)
-    if not 'OK' in ret2.text:
+    if 'OK' not in ret2.text:
         raise Exception("Login failed: %s" % ret2.text)
 
     # print("Login successful, parsing cookie.")
@@ -39,42 +38,42 @@ def main(args):
     # print("Got COOKIE: %s" % cookie)
     s.cookies.set("XSSID", cookie)
 
-    if args.state is None:
-        ret = s.get(url, params={"cmd": 773})
-        if ret.ok:
-            soup = BeautifulSoup(ret.content, 'html.parser')
-            table = soup.select("table")[2]
-            data = []
-            # https://stackoverflow.com/a/23377804
-            for row in table.find_all('tr'):
-                cols = row.find_all('td')
-                cols = [ele.text.strip() for ele in cols]
-                data.append([ele for ele in cols if ele])
-
-            ret = []
-            for entry in data[3:]:
-                if entry:
-                    entr = {}
-                    for i, item in enumerate(entry[:-1]):
-                        entr[data[0][i]] = item
-                    ret.append(entr)
-            output = None
-            if args.port:
-                if args.verbose:
-                    output = ret[args.port-1]
-                else:
-                    output = ret[args.port-1].get("State")
-            else:
-                output = ret
-            print(output)
-        else:
-            raise Exception("Failed to fetch the state of PoE port %s. Got response: %s" % (
-                args.port, ret.text))
+    ret = s.get(url, params={"cmd": 773})
+    if ret.ok:
+        soup = BeautifulSoup(ret.content, 'html.parser')
     else:
+        raise Exception("Failed to fetch the state of PoE port %s."
+                        "Got response: %s" % (args.port, ret.text))
+    if args.state is None:
+        table = soup.select("table")[2]
+        data = []
+        # https://stackoverflow.com/a/23377804
+        for row in table.find_all('tr'):
+            cols = row.find_all('td')
+            cols = [ele.text.strip() for ele in cols]
+            data.append([ele for ele in cols if ele])
+
+        ret = []
+        for entry in data[3:]:
+            if entry:
+                entr = {}
+                for i, item in enumerate(entry[:-1]):
+                    entr[data[0][i]] = item
+                ret.append(entr)
+        if args.port:
+            if args.verbose:
+                output = ret[args.port - 1]
+            else:
+                output = ret[args.port - 1].get("State")
+        else:
+            output = ret
+        print(output)
+    else:
+        xssid_content = soup.find('input', {'id': 'XSSID'}).get('value')
         print("Executing command: Turn %s PoE Port %s." %
               ('on' if args.state else 'off', args.port))
         command_data = {
-            "XSSID": cookie,
+            "XSSID": xssid_content,
             "portlist": args.port,
             "state": args.state,
             "portPriority": 2,
@@ -103,16 +102,16 @@ def encode(_input):
     possible = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789"
     _len = lenn = len(_input)
     i = 1
-    while i <= (320-_len):
-        if (0 == i % 7 and _len > 0):
+    while i <= (320 - _len):
+        if 0 == i % 7 and _len > 0:
             _len -= 1
             password += _input[_len]
-        elif (i == 123):
-            if (lenn < 10):
+        elif i == 123:
+            if lenn < 10:
                 password += "0"
             else:
-                password += str(math.floor(lenn/10))
-        elif (i == 289):
+                password += str(math.floor(lenn / 10))
+        elif i == 289:
             password += str(lenn % 10)
         else:
             password += possible[math.floor(random() * len(possible))]
@@ -137,7 +136,9 @@ if __name__ == "__main__":
                         required=True, help='Password of the admin user.')
     parser.add_argument('--port', '-p', dest='port', type=int, required=True,
                         help='The port number. When querying information, 0 means all ports.')
-    parser.add_argument('--state', '-s', dest='state', type=int, 
-                        choices=[0, 1], help='Turn the port on (1) or off (0). To query the state, rather than set it, omit this parameter.')
-    parser.add_argument('--verbose', '-V', dest='verbose', action="store_true", help='Return detailed information when querying the specified port state.')
+    parser.add_argument('--state', '-s', dest='state', type=int,
+                        choices=[0, 1],
+                        help='Turn the port on (1) or off (0). To query the state, rather than set it, omit this parameter.')
+    parser.add_argument('--verbose', '-V', dest='verbose', action="store_true",
+                        help='Return detailed information when querying the specified port state.')
     main(parser.parse_args())
