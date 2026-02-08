@@ -15,7 +15,7 @@ The only requirements are `requests` and `BeautifulSoup4` (for HTML parsing). Yo
 ```bash
 python3 -m pip install -r requirements.txt
 ```
-This script is compatible with the latest firmware version `V2.70(AAZI.1)_20220111` of my `GS1900-10HP` model rev `A1`.
+This script is compatible with the latest firmware version `V2.90(AAZI.1)_20250304` of my `GS1900-10HP` model rev `A1`.
 There are absolutely no guarantees that it will work with your system.
 
 **There is a separate release of this script for each firmware!**
