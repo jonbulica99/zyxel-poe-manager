@@ -72,7 +72,7 @@ def main(args):
             "state": args.state,
             "portPriority": 2,
             "portPowerMode": 3,
-            "portRangeDetection": 0,
+            "portRangeDetection": args.range_detection,
             "portLimitMode": 0,
             "poeTimeRange": 20,
             "cmd": 775,
@@ -124,6 +124,9 @@ if __name__ == "__main__":
                         choices=[0, 1],
                         help='Turn the port on (1) or off (0). To query the state, '
                              'rather than set it, omit this parameter.')
+    parser.add_argument('--wide-range-detection', '-w', dest='range_detection', type=int,
+                        choices=[0, 1], default=0,
+                        help='Enable (1) or disable (0) wide range detection. Default: 0 (disabled).')
     parser.add_argument('--verbose', '-V', dest='verbose', action="store_true",
                         help='Return detailed information when querying the specified port state.')
     main(parser.parse_args())
